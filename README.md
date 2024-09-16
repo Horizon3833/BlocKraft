@@ -98,22 +98,27 @@ blockraft/
 │   └── logo.png
 │
 ├── extensions/          # Custom extensions
-│   └── io_horizon_chess/
-│       └── extension.aix
+│   └── io_horizon_chess/    # Example
+│       └── extension.aix    # Extension
 │
 ├── screens/             # Screen folders
 │   ├── Screen1/
-│   │   ├── Screen1.bky
-│   │   └── Screen1.scm
+│   │   ├── Screen1.bky      # Block
+│   │   └── Screen1.scm      # Screen
+│   └── Screen2/
+│       ├── Screen2.bky
+│       └── Screen2.scm
 │
-├── shared_components/   # Reusable components
+├── components/          # Reusable components
 │   ├── Navbar.bky
 │   └── Footer.bky
+│
+├── project.properties   # Contains the meta-data of project
 │
 ├── output/              # Exported files
 │   └── blockraft.aia
 │
-├── blockraft.yaml       # Settings file
+├── blockraft.yaml       # Settings
 └── README.md            # Project documentation
 ```
 
