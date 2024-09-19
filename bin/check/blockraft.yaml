@@ -1,0 +1,14 @@
+project:
+  name: check
+  author: "Manan Sharma"
+  description: "Nothing jsut checking"
+
+screens:
+  default: Screen1
+
+extensions:
+  enabled:
+
+assets:
+
+      

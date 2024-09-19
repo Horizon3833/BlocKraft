@@ -1,19 +1,18 @@
-
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:blockraft/file_templates/blockraft_yaml.dart';
 import 'package:blockraft/file_templates/project_properties.dart';
-import 'package:blockraft/file_templates/scm_content.dart';
+import 'package:blockraft/helpers/config/parsing_yaml.dart';
 import 'package:blockraft/helpers/print_art.dart';
 import 'package:dart_console/dart_console.dart';
 
-import '../../helpers/simple_question.dart';
+import '../../helpers/question/simple_question.dart';
 
-class CreateCommand extends Command{
+class CreateCommand extends Command {
   final String _cd;
 
-  CreateCommand(this._cd){
+  CreateCommand(this._cd) {
     argParser
       ..addOption('name', abbr: 'n', help: 'The name of the project you want to create')
       ..addOption('package', abbr: 'p', help: 'The package name of the project you want to create')
@@ -21,6 +20,7 @@ class CreateCommand extends Command{
       ..addOption('description', abbr: 'u', help: 'The description of the project you want to create')
       ..addOption('builder', abbr: 'b', help: 'The builder name of the project you want to create. Default is n for Niotron, k for Kodular, m for MIT AI2');
   }
+
   @override
   String get description => 'Creates a new project for AI2 applications';
 
@@ -50,89 +50,60 @@ class CreateCommand extends Command{
     }
 
     PrintArt();
-    String appName;
-    final String package;
-    final String developerName;
-    final String builder;
-    final String description;
+    final String appName = _getArgument('name', 'App Name');
+    final String package = _getArgument('package', 'Package Name');
+    final String developerName = _getArgument('developer', 'Author Name');
+    final String description = _getArgument('description', 'Description');
+    _getBuilder();
 
+    _createProject(appName, package, developerName, description);
+  }
 
-    if (argResults!['builder'] != null) {
-      builder = argResults!['builder'].toString().trim();
-      if(builder.toString() != 'n') {
-        Console()
-          ..setForegroundColor(ConsoleColor.red)
-          ..write('• ')
-          ..setForegroundColor(ConsoleColor.brightRed)
-          ..write('Error! ')
-          ..resetColorAttributes()
-          ..write('Please provide the correct builder name')
-          ..writeLine()
-          ..setForegroundColor(ConsoleColor.green)
-          ..write('• blockraft create [App Name] -b {builder code}');
-        exit(64);
-      }
-    } else {
-      Console()
-        ..setForegroundColor(ConsoleColor.red)
-        ..write('• ')
-        ..setForegroundColor(ConsoleColor.brightRed)
-        ..write('Error! ')
-        ..resetColorAttributes()
-        ..write('Please provide the builder name')
-        ..writeLine()
-        ..setForegroundColor(ConsoleColor.green)
-        ..write('• blockraft create [App Name] -b {builder code}');
-      exit(64);
+  String _getArgument(String argName, String question) {
+    return argResults![argName]?.toString().trim() ?? SimpleQuestion(question: question).ask();
+  }
+
+  String? _getBuilder() {
+    final builder = argResults!['builder']?.toString().trim();
+    if (builder == null || builder != 'n') {
+      _printError('Please provide the correct builder name');
     }
+    return builder;
+  }
 
-    if (argResults!['name'] == null) {
-      appName = SimpleQuestion(question: 'App Name').ask();
-    } else {
-      appName = argResults!['name'].toString().trim();
-    }
+  void _printError(String message) {
+    Console()
+      ..setForegroundColor(ConsoleColor.red)
+      ..write('• ')
+      ..setForegroundColor(ConsoleColor.brightRed)
+      ..write('Error! ')
+      ..resetColorAttributes()
+      ..write(message)
+      ..writeLine()
+      ..setForegroundColor(ConsoleColor.green)
+      ..write('• blockraft create [App Name] -b {builder code}');
+    exit(64);
+  }
 
-    if (argResults!['package'] == null) {
-      package = SimpleQuestion(question: 'Package Name').ask();
-    } else {
-      package = argResults!['package'].toString().trim();
-    }
+  Future<void> _createProject(String appName, String package, String developerName, String description) async {
+    final homeDirectory = Directory('$_cd\\$appName')..createSync(recursive: true);
 
-    if (argResults!['developer'] == null) {
-      developerName = SimpleQuestion(question: 'Author Name').ask();
-    } else {
-      developerName = argResults!['developer'].toString().trim();
-    }
-
-    if (argResults!['description'] == null) {
-      description = SimpleQuestion(question: 'Description').ask();
-    } else {
-      description = argResults!['description'].toString().trim();
-    }
-
-    var projectProperties = ProjectProperties(appName, package, developerName);
-
-    // Create project.properties file
-    var homeDirectory = Directory('$_cd\\$appName')..createSync(recursive: true);
-    print(homeDirectory);
-    var assetsDirectory = Directory('${homeDirectory.path}\\assets')..createSync(recursive: true);
-    var extDirectory = Directory('${homeDirectory.path}\\extensions')..createSync(recursive: true);
-    var screensDirectory = Directory('${homeDirectory.path}\\screens')..createSync(recursive: true);
-    var componentsDirectory = Directory('${homeDirectory.path}\\components')..createSync(recursive: true);
-    var outputDirectory = Directory('${homeDirectory.path}\\output')..createSync(recursive: true);
-
-    final String blockraftYamlPath = '${homeDirectory.path}\\blockraft.yaml';
-    final String propertiesPath = '${homeDirectory.path}\\project.properties';
-    final String screen1ScmPath = '${homeDirectory.path}\\screens\\Screen1\\Screen1.scm';
-
-    File blockraftYamlFile = File(blockraftYamlPath)..createSync(recursive: true);
-    File propertiesFile = File(propertiesPath)..createSync(recursive: true);
-    File screen1ScmFile = File(screen1ScmPath)..createSync(recursive: true);
-
-
+    //Creating the main blockraft.yaml file
+    final blockraftYamlPath = '${homeDirectory.path}\\blockraft.yaml';
+    final blockraftYamlFile = File(blockraftYamlPath)..createSync(recursive: true);
     blockraftYamlFile.writeAsString(BlockraftYamlContent(appName, developerName, description).content);
+
+    var parsingYaml = ParsingYaml(blockraftYamlFile, homeDirectory, appName);
+    parsingYaml.loadConfig();
+
+    final projectProperties = ProjectProperties(appName, package, developerName);
+
+    Directory('${homeDirectory.path}\\assets').createSync(recursive: true);
+    Directory('${homeDirectory.path}\\extensions').createSync(recursive: true);
+
+    final propertiesPath = '${homeDirectory.path}\\project.properties';
+    final propertiesFile = File(propertiesPath)..createSync(recursive: true);
     propertiesFile.writeAsString(projectProperties.getContentForNiotron());
-    screen1ScmFile.writeAsString(ScmContent('Screen1', appName).content);
 
     Console()
       ..setForegroundColor(ConsoleColor.green)
