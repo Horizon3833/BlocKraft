@@ -54,9 +54,9 @@ class CreateCommand extends Command {
     final String package = _getArgument('package', 'Package Name');
     final String developerName = _getArgument('developer', 'Author Name');
     final String description = _getArgument('description', 'Description');
-    _getBuilder();
+    String? builder = _getBuilder();
 
-    _createProject(appName, package, developerName, description);
+    _createProject(appName, package, developerName, description, builder!);
   }
 
   String _getArgument(String argName, String question) {
@@ -81,29 +81,50 @@ class CreateCommand extends Command {
       ..write(message)
       ..writeLine()
       ..setForegroundColor(ConsoleColor.green)
-      ..write('• blockraft create [App Name] -b {builder code}');
+      ..write('• blockraft create <App Name> -b <builder code>');
     exit(64);
   }
 
-  Future<void> _createProject(String appName, String package, String developerName, String description) async {
-    final homeDirectory = Directory('$_cd\\$appName')..createSync(recursive: true);
-
+  File createBlockraftYaml(Directory homeDirectory, String appName, String developerName, ){
     //Creating the main blockraft.yaml file
     final blockraftYamlPath = '${homeDirectory.path}\\blockraft.yaml';
     final blockraftYamlFile = File(blockraftYamlPath)..createSync(recursive: true);
     blockraftYamlFile.writeAsString(BlockraftYamlContent(appName, developerName, description).content);
 
-    var parsingYaml = ParsingYaml(blockraftYamlFile, homeDirectory, appName);
-    parsingYaml.loadConfig();
+    return blockraftYamlFile;
+  }
+
+  void parseYaml(File blockraftYamlFile, Directory homeDirectory, String appName) async{
+    var parsingYaml = ParsingYaml(homeDirectory);
+    var config = await parsingYaml.loadConfig(blockraftYamlFile);
+    parsingYaml.createScreens(config);
+    parsingYaml.handleExtensions(config);
+  }
+
+  Future<void> _createProject(String appName, String package, String developerName, String description, String builder) async {
+    final homeDirectory = Directory('$_cd\\$appName')..createSync(recursive: true);
+
+    var blockraftYamlFile = createBlockraftYaml(homeDirectory, appName, developerName);
 
     final projectProperties = ProjectProperties(appName, package, developerName);
+    parseYaml(blockraftYamlFile, homeDirectory, appName);
 
+    // Creating Assets and Extensions Directory...
     Directory('${homeDirectory.path}\\assets').createSync(recursive: true);
     Directory('${homeDirectory.path}\\extensions').createSync(recursive: true);
 
+    // Creating project.properties file
     final propertiesPath = '${homeDirectory.path}\\project.properties';
     final propertiesFile = File(propertiesPath)..createSync(recursive: true);
-    propertiesFile.writeAsString(projectProperties.getContentForNiotron());
+    if(builder == 'n') {
+      propertiesFile.writeAsString(projectProperties.getContentForNiotron());
+    }
+    else if(builder == 'k'){
+      // TODO: Properties file's content for Kodular
+    }
+    else if(builder == 'm'){
+      // TODO: Properties file's content for MIT App Inventor
+    }
 
     Console()
       ..setForegroundColor(ConsoleColor.green)

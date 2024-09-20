@@ -9,7 +9,8 @@ project:
   description: "$description"
 
 screens:
-  default: Screen1
+  include: 
+    - Screen1
 
 extensions:
   enabled:

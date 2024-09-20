@@ -4,15 +4,18 @@ import 'package:args/command_runner.dart';
 import 'package:blockraft/helpers/print_art.dart';
 import 'package:dart_console/dart_console.dart';
 
-class BuildCommand extends Command {
+import '../../helpers/config/parsing_yaml.dart';
+
+class ConfigCommand extends Command {
   final String cd;
-  BuildCommand(this.cd);
+
+  ConfigCommand(this.cd);
 
   @override
-  String get description => 'Compiles the directory to aia file';
+  String get description => 'Re-configures the project';
 
   @override
-  String get name => 'build';
+  String get name => 'config';
 
   @override
   void printUsage() {
@@ -26,26 +29,21 @@ class BuildCommand extends Command {
       ..setForegroundColor(ConsoleColor.brightGreen)
       ..write('   Usage:')
       ..resetColorAttributes()
-      ..writeLine('   blockraft build  ');
+      ..writeLine('   blockraft config  ');
   }
 
   @override
   Future<void> run() async {
     PrintArt();
-    String extension;
-    if (argResults!.rest.length == 1) {
-      extension = argResults!.rest.first;
-    } else {
+    try {
+      File blockraftYamlFile = File(
+          '$cd${Platform.pathSeparator}blockraft.yaml');
+      Directory homeDirectory = Directory(cd);
+      parseYaml(blockraftYamlFile, homeDirectory);
+    } catch(e){
       printUsage();
       exit(64);
     }
-
-
-    var assetsDirectory = Directory('$cd${Platform.pathSeparator}assets');
-    var projectProperties = File('$cd${Platform.pathSeparator}project.properties');
-
-    var outputDirectory = Directory('$cd${Platform.pathSeparator}output');
-
     Console()
       ..setForegroundColor(ConsoleColor.green)
       ..writeLine()
@@ -53,7 +51,14 @@ class BuildCommand extends Command {
       ..setForegroundColor(ConsoleColor.brightGreen)
       ..write('Success! ')
       ..resetColorAttributes()
-      ..write('AIA Generated Successfully')
+      ..write('blockraft.yaml file is configured successfully :)')
       ..writeLine();
+
+  }
+  void parseYaml(File blockraftYamlFile, Directory homeDirectory) async{
+    var parsingYaml = ParsingYaml(homeDirectory);
+    var config = await parsingYaml.loadConfig(blockraftYamlFile);
+    parsingYaml.createScreens(config);
+    parsingYaml.handleExtensions(config);
   }
 }

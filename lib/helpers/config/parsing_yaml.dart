@@ -3,18 +3,15 @@ import 'package:yaml/yaml.dart';
 import 'dart:io';
 
 class ParsingYaml {
-  final File file;
   final Directory cd;
-  final String appName;
 
-  ParsingYaml(this.file, this.cd, this.appName);
+  ParsingYaml(this.cd);
 
   // Function to load and parse blockraft.yaml
-  Future<Map<String, dynamic>> loadConfig() async {
+  Future<YamlMap> loadConfig(File file) async{
     try {
       final yamlString = await file.readAsString();
       final yamlMap = loadYaml(yamlString);
-      print(yamlMap);
       return yamlMap;
     } catch (e) {
       print('Error loading config: $e');
@@ -23,8 +20,9 @@ class ParsingYaml {
   }
 
   // Function to create Screens based on config
-  void createScreens(Map<String, dynamic> config) {
-    final screens = config['screens']['include'] as List;
+  void createScreens(YamlMap config) {
+    final screens = config['screens']['include'];
+    final appName = config['project']['name'].toString();
     for (var screen in screens) {
       try {
         final screenFile = File('${cd.path}/screens/$screen/$screen.scm')..createSync(recursive: true);
@@ -36,11 +34,12 @@ class ParsingYaml {
   }
 
   // Function to handle extensions based on config
-  void handleExtensions(Map<String, dynamic> config) {
-    final enabledExtensions = config['extensions']['enabled'] as Map;
-    for (var ext in enabledExtensions.keys) {
-      // Logic to include or activate the extension
-      // Add error handling if necessary
+  void handleExtensions(YamlMap config) {
+    final enabledExtensions = config['extensions']['enabled'];
+    if (enabledExtensions != null) {
+      for (var ext in enabledExtensions.keys) {
+        // Logic to include or activate the extension
+      }
     }
   }
 }
