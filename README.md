@@ -122,6 +122,11 @@ blockraft/
 └── README.md            # Project documentation
 ```
 
+## Credits
+
+This project draws its inspiration from [Rush](https://github.com/shreyashsaitwal/rush-cli), incorporating several of its innovative features into BlocKraft.
+
+
 ## Contribution
 
 Feel free to fork this repository, raise issues, or contribute by submitting pull requests.
