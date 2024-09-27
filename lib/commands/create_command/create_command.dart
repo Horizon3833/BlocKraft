@@ -94,7 +94,7 @@ class CreateCommand extends Command {
     return blockraftYamlFile;
   }
 
-  void parseYaml(File blockraftYamlFile, Directory homeDirectory, String appName) async{
+  void parseYaml(File blockraftYamlFile, Directory homeDirectory) async{
     var parsingYaml = ParsingYaml(homeDirectory);
     var config = await parsingYaml.loadConfig(blockraftYamlFile);
     parsingYaml.createScreens(config);
@@ -107,7 +107,7 @@ class CreateCommand extends Command {
     var blockraftYamlFile = createBlockraftYaml(homeDirectory, appName, developerName);
 
     final projectProperties = ProjectProperties(appName, package, developerName);
-    parseYaml(blockraftYamlFile, homeDirectory, appName);
+    parseYaml(blockraftYamlFile, homeDirectory);
 
     // Creating Assets and Extensions Directory...
     Directory('${homeDirectory.path}\\assets').createSync(recursive: true);

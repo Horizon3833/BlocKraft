@@ -12,7 +12,7 @@
         <entry key="_macros">
           <value>
             <list>
-              <option value="C:/flutter/bin/cache/dart-sdk/pkg/_macros/lib" />
+              <option value="C:/dart-sdk/pkg/_macros/lib" />
             </list>
           </value>
         </entry>
@@ -460,7 +460,7 @@
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/webkit_inspection_protocol-1.2.1/lib" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/win32-5.5.3/lib" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/yaml-3.1.2/lib" />
-      <root url="file://C:/flutter/bin/cache/dart-sdk/pkg/_macros/lib" />
+      <root url="file://C:/dart-sdk/pkg/_macros/lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

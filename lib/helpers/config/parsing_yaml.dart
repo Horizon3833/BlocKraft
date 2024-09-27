@@ -19,6 +19,16 @@ class ParsingYaml {
     }
   }
 
+  String getAuthorName(YamlMap config){
+    final authorName = config['project']['author'].toString();
+    return authorName;
+  }
+
+  String getAppName(YamlMap config){
+    final appName = config['project']['name'].toString();
+    return appName;
+  }
+
   // Function to create Screens based on config
   void createScreens(YamlMap config) {
     final screens = config['screens']['include'];
